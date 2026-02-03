@@ -1,0 +1,1 @@
+Root path for the application. It's expected now to try different AI agents and implement idea in couple of programming languages to compare approaches. 
