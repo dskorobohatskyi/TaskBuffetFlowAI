@@ -13,6 +13,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   final _customSplitController = TextEditingController();
   final _targetCountController = TextEditingController();
   final _targetMinutesController = TextEditingController();
+  final _minExecMinutesController = TextEditingController();
 
   UnitType unitType = UnitType.minutes;
   List<int> selectedSplits = [];
@@ -39,6 +40,10 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
       final parsed = int.tryParse(_targetCountController.text);
       if (parsed == null || parsed <= 0) return;
     }
+    if (unitType == UnitType.executions) {
+      final parsed = int.tryParse(_minExecMinutesController.text);
+      if (parsed == null || parsed <= 0) return;
+    }
 
     final service = context.read<TaskService>();
     final targetValue = unitType == UnitType.minutes
@@ -52,6 +57,8 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
         unitType: unitType,
         targetValue: targetValue,
         allowedSplits: unitType == UnitType.minutes ? selectedSplits : const [],
+        minRequiredMinutes:
+            unitType == UnitType.executions ? int.parse(_minExecMinutesController.text) : null,
       ),
     );
 
@@ -86,6 +93,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     _customSplitController.dispose();
     _targetCountController.dispose();
     _targetMinutesController.dispose();
+    _minExecMinutesController.dispose();
     super.dispose();
   }
 
@@ -180,6 +188,14 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(labelText: _targetLabel(unitType)),
               ),
+              if (unitType == UnitType.executions) ...[
+                SizedBox(height: 12),
+                TextField(
+                  controller: _minExecMinutesController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Min required minutes'),
+                ),
+              ],
             ],
 
             const Spacer(),

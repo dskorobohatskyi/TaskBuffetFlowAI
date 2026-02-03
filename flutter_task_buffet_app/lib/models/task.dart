@@ -33,6 +33,7 @@ class Task {
   int progress;
   int sessionCount;
   int lastSessionValue;
+  int? minRequiredMinutes;
   bool isOneTime;
   String energyLevel;
   List<Subtask> subtasks;
@@ -46,6 +47,7 @@ class Task {
     this.progress = 0,
     this.sessionCount = 0,
     this.lastSessionValue = 0,
+    this.minRequiredMinutes,
     this.isOneTime = false,
     this.energyLevel = "medium",
     this.subtasks = const [],

@@ -36,6 +36,9 @@ class TaskService extends ChangeNotifier {
       if (t.unitType == UnitType.minutes) {
         return t.allowedSplits.any((s) => s <= maxMinutes);
       }
+      if (t.unitType == UnitType.executions) {
+        return (t.minRequiredMinutes ?? 0) <= maxMinutes;
+      }
       return true;
     }).toList();
   }
