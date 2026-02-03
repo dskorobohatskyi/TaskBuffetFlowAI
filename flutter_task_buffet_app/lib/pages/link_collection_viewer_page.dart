@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/task_service.dart';
+import 'link_collection_editor_page.dart';
 
 class LinkCollectionViewerPage extends StatelessWidget {
   final String collectionId;
@@ -65,6 +66,26 @@ class LinkCollectionViewerPage extends StatelessWidget {
           );
         },
       ),
+      floatingActionButton: Consumer<TaskService>(
+        builder: (_, service, __) {
+          final collection = service.getLinkCollectionById(collectionId);
+          return FloatingActionButton(
+            onPressed: collection == null
+                ? null
+                : () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => LinkCollectionEditorPage(collection: collection),
+                        settings: RouteSettings(name: 'LinkCollectionEditorPage'),
+                      ),
+                    );
+                  },
+            child: Icon(Icons.edit),
+          );
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );
   }
 }

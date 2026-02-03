@@ -77,6 +77,7 @@ class LinkCollectionsPage extends StatelessWidget {
         },
         child: Icon(Icons.add),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );
   }
 }
