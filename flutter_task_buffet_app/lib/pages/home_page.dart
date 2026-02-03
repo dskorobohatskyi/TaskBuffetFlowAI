@@ -8,10 +8,11 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Task Buffet')),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('Привіт! Сьогодні можна обрати час для задач.', textAlign: TextAlign.center),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
           SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
@@ -25,6 +26,7 @@ class HomePage extends StatelessWidget {
             },
             child: const Text('Create new task'),
           ),
+          SizedBox(height: 8),
           ElevatedButton(
             onPressed: () {
               Navigator.push(
@@ -37,6 +39,7 @@ class HomePage extends StatelessWidget {
             },
             child: Text('Suggest me anything'),
           ),
+          SizedBox(height: 8),
           ElevatedButton(
             onPressed: () {
               Navigator.push(
@@ -49,9 +52,9 @@ class HomePage extends StatelessWidget {
             },
             child: Text('Show my progress'),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
-
