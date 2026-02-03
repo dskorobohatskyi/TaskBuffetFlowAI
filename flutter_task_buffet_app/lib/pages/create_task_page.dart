@@ -14,8 +14,15 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   final _targetCountController = TextEditingController();
   final _targetMinutesController = TextEditingController();
   final _minExecMinutesController = TextEditingController();
+  String? _selectedLinkCollectionId;
 
   UnitType unitType = UnitType.minutes;
+  final List<UnitType> _unitTypeOptions = [
+    UnitType.minutes,
+    UnitType.executions,
+    UnitType.pages,
+    UnitType.links,
+  ];
   List<int> selectedSplits = [];
   final List<int> predefinedSplits = [5, 10, 15, 20, 30, 45, 60];
 
@@ -44,6 +51,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
       final parsed = int.tryParse(_minExecMinutesController.text);
       if (parsed == null || parsed <= 0) return;
     }
+    if (unitType == UnitType.links && _selectedLinkCollectionId == null) return;
 
     final service = context.read<TaskService>();
     final targetValue = unitType == UnitType.minutes
@@ -58,7 +66,10 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
         targetValue: targetValue,
         allowedSplits: unitType == UnitType.minutes ? selectedSplits : const [],
         minRequiredMinutes:
-            unitType == UnitType.executions ? int.parse(_minExecMinutesController.text) : null,
+            (unitType == UnitType.executions || unitType == UnitType.links)
+                ? int.tryParse(_minExecMinutesController.text)
+                : null,
+        linkCollectionId: unitType == UnitType.links ? _selectedLinkCollectionId : null,
       ),
     );
 
@@ -73,6 +84,8 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
         return "Executions (times)";
       case UnitType.pages:
         return "Pages";
+      case UnitType.links:
+        return "Links";
     }
   }
 
@@ -84,6 +97,8 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
         return "Target pages";
       case UnitType.minutes:
         return "Target minutes";
+      case UnitType.links:
+        return "Target links";
     }
   }
 
@@ -116,7 +131,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
             DropdownButtonFormField<UnitType>(
               value: unitType,
               decoration: const InputDecoration(labelText: 'Task type'),
-              items: UnitType.values
+              items: _unitTypeOptions
                   .map(
                     (t) => DropdownMenuItem(
                       value: t,
@@ -131,6 +146,9 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                   selectedSplits.clear();
                   _customSplitController.clear();
                   _targetCountController.clear();
+                  _targetMinutesController.clear();
+                  _minExecMinutesController.clear();
+                  _selectedLinkCollectionId = null;
                 });
               },
             ),
@@ -188,12 +206,35 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(labelText: _targetLabel(unitType)),
               ),
-              if (unitType == UnitType.executions) ...[
+              if (unitType == UnitType.executions || unitType == UnitType.links) ...[
                 SizedBox(height: 12),
                 TextField(
                   controller: _minExecMinutesController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(labelText: 'Min required minutes'),
+                ),
+              ],
+              if (unitType == UnitType.links) ...[
+                SizedBox(height: 12),
+                Consumer<TaskService>(
+                  builder: (_, service, __) {
+                    final collections = service.allLinkCollections;
+                    return DropdownButtonFormField<String>(
+                      value: _selectedLinkCollectionId,
+                      decoration: const InputDecoration(labelText: 'Link collection'),
+                      items: collections
+                          .map(
+                            (c) => DropdownMenuItem(
+                              value: c.id,
+                              child: Text(c.title),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() => _selectedLinkCollectionId = value);
+                      },
+                    );
+                  },
                 ),
               ],
             ],

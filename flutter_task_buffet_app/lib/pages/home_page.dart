@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'time_picker_page.dart';
 import 'create_task_page.dart';
 import 'progress_page.dart';
+import 'link_collections_page.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -51,6 +52,19 @@ class HomePage extends StatelessWidget {
               );
             },
             child: Text('Show my progress'),
+          ),
+          SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => LinkCollectionsPage(),
+                  settings: RouteSettings(name: 'LinkCollectionsPage'),
+                ),
+              );
+            },
+            child: Text('Manage links'),
           ),
           ],
         ),

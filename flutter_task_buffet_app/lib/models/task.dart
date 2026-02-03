@@ -1,4 +1,4 @@
-enum UnitType { minutes, executions, pages }
+enum UnitType { minutes, executions, pages, links }
 
 extension UnitTypeLabel on UnitType {
   String get shortLabel {
@@ -9,6 +9,8 @@ extension UnitTypeLabel on UnitType {
         return "(times)";
       case UnitType.pages:
         return "pages";
+      case UnitType.links:
+        return "links";
     }
   }
 }
@@ -22,6 +24,7 @@ class Task {
   int sessionCount;
   int lastSessionValue;
   int? minRequiredMinutes;
+  String? linkCollectionId;
   bool isOneTime;
   String energyLevel;
   List<int> allowedSplits;
@@ -35,6 +38,7 @@ class Task {
     this.sessionCount = 0,
     this.lastSessionValue = 0,
     this.minRequiredMinutes,
+    this.linkCollectionId,
     this.isOneTime = false,
     this.energyLevel = "medium",
     this.allowedSplits = const [],

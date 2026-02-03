@@ -1,2 +1,8 @@
 Add energy level usage across the application.
-Add link container task.
+Add link container task. (done)
+Should link source have info about link status (done or not)?
+Resolve overflow issue when task is accomplished but user has done even more then was expected.
+Cancel button on completion page which nullifies current progress.
+'Try to find relevant task' from "Manage links -> collection menu, or suggest the user that this collection is referenced by list<specified_task>. some kind of collection in use.
+create new link collection from create task menu (just in place)
+Make sure that collection id is set and used properly during UI procedures.

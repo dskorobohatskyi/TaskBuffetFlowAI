@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../services/task_service.dart';
 import '../models/task.dart';
 import 'execution_page.dart';
+import 'link_selection_page.dart';
 
 class TaskBuffetPage extends StatefulWidget {
   final int maxMinutes;
@@ -236,13 +237,22 @@ class TaskCard extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => ExecutionPage(task: task),
-                    settings: RouteSettings(name: 'ExecutionPage'),
-                  ),
+                  task.linkCollectionId != null || task.unitType == UnitType.links
+                      ? MaterialPageRoute(
+                          builder: (_) => LinkSelectionPage(task: task),
+                          settings: RouteSettings(name: 'LinkSelectionPage'),
+                        )
+                      : MaterialPageRoute(
+                          builder: (_) => ExecutionPage(task: task),
+                          settings: RouteSettings(name: 'ExecutionPage'),
+                        ),
                 );
               },
-              child: Text('Виконати'),
+              child: Text(
+                task.linkCollectionId != null || task.unitType == UnitType.links
+                    ? 'Choose link'
+                    : 'Виконати',
+              ),
             ),
           ],
         ),
@@ -295,3 +305,5 @@ class _TaskStats extends StatelessWidget {
     );
   }
 }
+
+

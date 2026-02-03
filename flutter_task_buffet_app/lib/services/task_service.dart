@@ -1,11 +1,36 @@
 import 'package:flutter/material.dart';
 import '../models/task.dart';
+import '../models/link_collection.dart';
 import 'dart:math';
 
 class TaskService extends ChangeNotifier {
   final List<Task> _tasks = [];
+  final List<LinkCollection> _linkCollections = [];
 
   TaskService() {
+    _linkCollections.add(
+      LinkCollection(
+        id: 'different_links',
+        title: 'Reading Links',
+        items: [
+          LinkItem(
+            id: 'l1',
+            title: 'Deep Work summary',
+            url: 'https://example.com/deep-work',
+          ),
+          LinkItem(
+            id: 'l2',
+            title: 'Codex tutorial',
+            url: 'https://www.youtube.com/watch?v=px7XlbYgk7I',
+          ),
+          LinkItem(
+            id: 'l3',
+            title: 'Focus techniques',
+            url: 'https://example.com/focus',
+          ),
+        ],
+      ),
+    );
     _tasks.addAll([
       Task(
         id: generateId(),
@@ -16,9 +41,11 @@ class TaskService extends ChangeNotifier {
       ),
       Task(
         id: generateId(),
-        title: 'Reading',
-        unitType: UnitType.pages,
-        targetValue: 30,
+        title: 'Read articles',
+        unitType: UnitType.links,
+        targetValue: 2,
+        linkCollectionId: 'different_links',
+        minRequiredMinutes: 10,
       ),
       Task(
         id: generateId(),
@@ -30,6 +57,45 @@ class TaskService extends ChangeNotifier {
   }
 
   List<Task> get allTasks => List.unmodifiable(_tasks);
+  List<LinkCollection> get allLinkCollections => List.unmodifiable(_linkCollections);
+
+  LinkCollection? getLinkCollectionById(String id) {
+    for (final c in _linkCollections) {
+      if (c.id == id) return c;
+    }
+    return null;
+  }
+
+  void upsertLinkCollection(LinkCollection collection) {
+    final index = _linkCollections.indexWhere((c) => c.id == collection.id);
+    if (index >= 0) {
+      _linkCollections[index] = collection;
+    } else {
+      _linkCollections.add(collection);
+    }
+    notifyListeners();
+  }
+
+  void toggleLinkDone(String collectionId, String linkId) {
+    final index = _linkCollections.indexWhere((c) => c.id == collectionId);
+    if (index < 0) return;
+    final collection = _linkCollections[index];
+    final updatedItems = collection.items.map((item) {
+      if (item.id != linkId) return item;
+      return item.copyWith(hasDone: !item.hasDone);
+    }).toList();
+    _linkCollections[index] = LinkCollection(
+      id: collection.id,
+      title: collection.title,
+      items: updatedItems,
+    );
+    notifyListeners();
+  }
+
+  void removeLinkCollection(String id) {
+    _linkCollections.removeWhere((c) => c.id == id);
+    notifyListeners();
+  }
 
   List<Task> filteredTasks(int maxMinutes) {
     return _tasks.where((t) {
@@ -37,6 +103,9 @@ class TaskService extends ChangeNotifier {
         return t.allowedSplits.any((s) => s <= maxMinutes);
       }
       if (t.unitType == UnitType.executions) {
+        return (t.minRequiredMinutes ?? 0) <= maxMinutes;
+      }
+      if (t.unitType == UnitType.links) {
         return (t.minRequiredMinutes ?? 0) <= maxMinutes;
       }
       return true;
@@ -50,6 +119,7 @@ class TaskService extends ChangeNotifier {
 
   void updateProgress(Task task, int value) {
     task.progress += value;
+    if (task.progress < 0) task.progress = 0;
     notifyListeners();
   }
 
@@ -57,6 +127,13 @@ class TaskService extends ChangeNotifier {
     task.sessionCount += 1;
     task.lastSessionValue = sessionValue;
     notifyListeners();
+  }
+
+  void decrementSession(Task task) {
+    if (task.sessionCount > 0) {
+      task.sessionCount -= 1;
+      notifyListeners();
+    }
   }
 
   String generateId() {
