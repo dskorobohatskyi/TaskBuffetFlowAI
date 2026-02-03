@@ -1,0 +1,38 @@
+import 'package:flutter/material.dart';
+import '../models/task.dart';
+import 'dart:math';
+
+class TaskService extends ChangeNotifier {
+  final List<Task> _tasks = [];
+
+  List<Task> get allTasks => List.unmodifiable(_tasks);
+
+  List<Task> filteredTasks(int maxMinutes) {
+    return _tasks.where((t) {
+      if (t.unitType == UnitType.minutes) {
+        return t.allowedSplits.any((s) => s <= maxMinutes);
+      }
+      return true;
+    }).toList();
+  }
+
+  void addTask(Task task) {
+    _tasks.add(task);
+    notifyListeners();
+  }
+
+  void updateProgress(Task task, int value) {
+    task.progress += value;
+    notifyListeners();
+  }
+
+  void recordSession(Task task, int sessionValue) {
+    task.sessionCount += 1;
+    task.lastSessionValue = sessionValue;
+    notifyListeners();
+  }
+
+  String generateId() {
+    return Random().nextInt(100000).toString();
+  }
+}
