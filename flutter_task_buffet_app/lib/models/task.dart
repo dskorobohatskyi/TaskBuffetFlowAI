@@ -13,18 +13,6 @@ extension UnitTypeLabel on UnitType {
   }
 }
 
-class Subtask {
-  String title;
-  int estimatedTime; // in minutes or count
-  String energyLevel; // "low", "medium", "high"
-
-  Subtask({
-    required this.title,
-    required this.estimatedTime,
-    this.energyLevel = "medium",
-  });
-}
-
 class Task {
   String id;
   String title;
@@ -36,7 +24,6 @@ class Task {
   int? minRequiredMinutes;
   bool isOneTime;
   String energyLevel;
-  List<Subtask> subtasks;
   List<int> allowedSplits;
 
   Task({
@@ -50,7 +37,6 @@ class Task {
     this.minRequiredMinutes,
     this.isOneTime = false,
     this.energyLevel = "medium",
-    this.subtasks = const [],
     this.allowedSplits = const [],
   });
 

@@ -232,16 +232,6 @@ class TaskCard extends StatelessWidget {
               _TaskStats(task: task),
             ],
             SizedBox(height: 8),
-            Expanded(
-              child: ListView(
-                children: task.subtasks
-                    .map((s) => ListTile(
-                          title: Text(s.title),
-                          subtitle: Text('${s.estimatedTime} ${task.unitShortLabel} • ${s.energyLevel}'),
-                        ))
-                    .toList(),
-              ),
-            ),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
