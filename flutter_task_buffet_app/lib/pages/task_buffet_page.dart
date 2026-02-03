@@ -277,20 +277,27 @@ class _TaskStats extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          '$progress / $target ${task.unitShortLabel} ($percent%)',
-          style: TextStyle(fontSize: 12),
+        Expanded(
+          child: Text(
+            '$progress / $target ${task.unitShortLabel} ($percent%)',
+            style: TextStyle(fontSize: 12),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
+        SizedBox(width: 8),
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'Left: $remaining ${task.unitShortLabel}',
               style: TextStyle(fontSize: 12),
+              overflow: TextOverflow.ellipsis,
             ),
             Text(
               'Sessions: ${task.sessionCount}',
               style: TextStyle(fontSize: 12),
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

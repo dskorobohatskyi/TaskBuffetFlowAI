@@ -72,9 +72,11 @@ class _ExecutionPageState extends State<ExecutionPage> {
         appBar: AppBar(title: Text(widget.task.title)),
         body: Consumer<TaskService>(
           builder: (_, __, ___) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
                 Text(
                   '${widget.task.progress} / ${widget.task.targetValue} ${widget.task.unitShortLabel}',
                   style: TextStyle(fontSize: 32),
@@ -103,8 +105,10 @@ class _ExecutionPageState extends State<ExecutionPage> {
                   ),
                   SizedBox(height: 12),
                 ],
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 12,
+                  runSpacing: 12,
                   children: [
                     if (widget.task.unitType == UnitType.pages) ...[
                       ElevatedButton(
@@ -118,7 +122,6 @@ class _ExecutionPageState extends State<ExecutionPage> {
                         },
                         child: Text('+1'),
                       ),
-                      SizedBox(width: 12),
                       ElevatedButton(
                         onPressed: () {
                           setState(() => _showPagePicker = !_showPagePicker);
@@ -141,7 +144,6 @@ class _ExecutionPageState extends State<ExecutionPage> {
                         },
                         child: Text(widget.task.unitType == UnitType.executions ? 'done' : '+1'),
                       ),
-                    SizedBox(width: 20),
                     ElevatedButton(
                       onPressed: () => _finishTask(context, _sessionCount),
                       child: Text(widget.task.unitType == UnitType.executions ? 'cancel' : 'stop'),
@@ -194,7 +196,8 @@ class _ExecutionPageState extends State<ExecutionPage> {
                     child: Text('Confirm $_selectedPages Pages'),
                   ),
                 ],
-              ],
+                ],
+              ),
             );
           },
         ),
@@ -207,16 +210,19 @@ class _ExecutionPageState extends State<ExecutionPage> {
         builder: (_, stopwatch, __) {
           return Scaffold(
             appBar: AppBar(title: Text(widget.task.title)),
-            body: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
                 Text(stopwatch.formattedTime, style: TextStyle(fontSize: 48)),
                 SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 12,
+                  runSpacing: 12,
                   children: [
                     ElevatedButton(onPressed: stopwatch.toggle, child: Text('pause')),
-                    SizedBox(width: 20),
                     ElevatedButton(
                         onPressed: () {
                           stopwatch.finish();
@@ -226,7 +232,8 @@ class _ExecutionPageState extends State<ExecutionPage> {
                         child: Text('stop')),
                   ],
                 ),
-              ],
+                ],
+              ),
             ),
           );
         },

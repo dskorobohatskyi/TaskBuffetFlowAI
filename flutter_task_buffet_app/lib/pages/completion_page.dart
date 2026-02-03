@@ -34,9 +34,11 @@ class _CompletionPageState extends State<CompletionPage> with SingleTickerProvid
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Ready!')),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
           ScaleTransition(
             scale: _scale,
             child: Icon(Icons.check_circle, size: 100, color: Colors.green),
@@ -58,7 +60,8 @@ class _CompletionPageState extends State<CompletionPage> with SingleTickerProvid
             },
             child: Text('Back'),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
