@@ -121,7 +121,7 @@ class _TaskBuffetPageState extends State<TaskBuffetPage> with SingleTickerProvid
                                     },
                                     child: Opacity(
                                       opacity: 0.65,
-                                      child: TaskCard(task: skippedTasks.last),
+                                      child: TaskCard(task: skippedTasks.last, showStats: true),
                                     ),
                                   ),
                                 ),
@@ -146,7 +146,7 @@ class _TaskBuffetPageState extends State<TaskBuffetPage> with SingleTickerProvid
                                   child: Opacity(
                                     opacity: 0.65,
                                     child: tasks.length > 1
-                                        ? TaskCard(task: tasks[1])
+                                        ? TaskCard(task: tasks[1], showStats: true)
                                         : _SidePlaceholder(),
                                   ),
                                 ),
@@ -167,7 +167,7 @@ class _TaskBuffetPageState extends State<TaskBuffetPage> with SingleTickerProvid
                             onPanEnd: (details) => swipeCard(details.velocity.pixelsPerSecond.dx),
                             child: Transform.translate(
                               offset: Offset(dragOffset + _enterOffset.value, 0),
-                              child: TaskCard(task: tasks.first),
+                              child: TaskCard(task: tasks.first, showStats: true),
                             ),
                           );
                         },
