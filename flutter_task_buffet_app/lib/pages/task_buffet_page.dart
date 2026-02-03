@@ -18,6 +18,9 @@ class _TaskBuffetPageState extends State<TaskBuffetPage> with SingleTickerProvid
   final List<Task> skippedTasks = [];
   double dragOffset = 0.0;
   late AnimationController _controller;
+  late Animation<double> _enterOffset;
+  late Animation<double> _sideSlide;
+  late Animation<double> _sideScale;
 
   @override
   void initState() {
@@ -25,7 +28,17 @@ class _TaskBuffetPageState extends State<TaskBuffetPage> with SingleTickerProvid
     final taskService = Provider.of<TaskService>(context, listen: false);
     tasks = taskService.filteredTasks(widget.maxMinutes);
 
-    _controller = AnimationController(vsync: this, duration: Duration(milliseconds: 300));
+    _controller = AnimationController(vsync: this, duration: Duration(milliseconds: 250));
+    _enterOffset = Tween<double>(begin: 80.0, end: 0.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+    _sideSlide = Tween<double>(begin: 16.0, end: 0.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+    _sideScale = Tween<double>(begin: 0.58, end: 0.6).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+    _controller.value = 1.0;
   }
 
   void removeTopTask() {
@@ -36,12 +49,17 @@ class _TaskBuffetPageState extends State<TaskBuffetPage> with SingleTickerProvid
     });
   }
 
+  void animateNextToCenter() {
+    _controller.reset();
+    _controller.forward();
+  }
+
   void swipeCard(double velocity) {
     if (velocity.abs() > 500) {
-      if (velocity > 0) {
+      if (velocity < 0) {
         _controller.forward().then((_) {
           removeTopTask();
-          _controller.reset();
+          animateNextToCenter();
           setState(() => dragOffset = 0.0);
         });
       } else if (skippedTasks.isNotEmpty) {
@@ -49,6 +67,7 @@ class _TaskBuffetPageState extends State<TaskBuffetPage> with SingleTickerProvid
           tasks.insert(0, skippedTasks.removeLast());
           dragOffset = 0.0;
         });
+        animateNextToCenter();
       } else {
         setState(() => dragOffset = 0.0);
       }
@@ -70,30 +89,113 @@ class _TaskBuffetPageState extends State<TaskBuffetPage> with SingleTickerProvid
             ? Text('Немає задач під цей час. Можеш відпочити 🙂')
             : SizedBox(
                 height: 400,
-                width: 300,
+                width: 340,
                 child: Stack(
-                  children: tasks.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    Task task = entry.value;
-                    bool isTop = index == 0;
-
-                    return Positioned(
-                      top: 10.0 * index,
-                      left: 10.0 * index,
-                      child: isTop
-                          ? GestureDetector(
-                              onPanUpdate: (details) => setState(() => dragOffset += details.delta.dx),
-                              onPanEnd: (details) => swipeCard(details.velocity.pixelsPerSecond.dx),
-                              child: Transform.translate(
-                                offset: Offset(dragOffset, 0),
-                                child: TaskCard(task: task),
+                  clipBehavior: Clip.none,
+                  children: [
+                    if (skippedTasks.isNotEmpty)
+                      Positioned(
+                        top: 40,
+                        left: -190,
+                        child: SizedBox(
+                          width: 180,
+                          child: AnimatedBuilder(
+                            animation: _sideSlide,
+                            builder: (_, __) {
+                              return Transform.translate(
+                                offset: Offset(-_sideSlide.value, 0),
+                                child: Transform.scale(
+                                  scale: _sideScale.value,
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.translucent,
+                                    onHorizontalDragEnd: (details) {
+                                      if (details.primaryVelocity != null &&
+                                          details.primaryVelocity! > 300 &&
+                                          skippedTasks.isNotEmpty) {
+                                        setState(() {
+                                          tasks.insert(0, skippedTasks.removeLast());
+                                          dragOffset = 0.0;
+                                        });
+                                        animateNextToCenter();
+                                      }
+                                    },
+                                    child: Opacity(
+                                      opacity: 0.65,
+                                      child: TaskCard(task: skippedTasks.last),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    Positioned(
+                      top: 40,
+                      right: -190,
+                      child: SizedBox(
+                        width: 180,
+                        child: AnimatedBuilder(
+                          animation: _sideSlide,
+                          builder: (_, __) {
+                            return Transform.translate(
+                              offset: Offset(_sideSlide.value, 0),
+                              child: Transform.scale(
+                                scale: _sideScale.value,
+                                child: IgnorePointer(
+                                  child: Opacity(
+                                    opacity: 0.65,
+                                    child: tasks.length > 1
+                                        ? TaskCard(task: tasks[1])
+                                        : _SidePlaceholder(),
+                                  ),
+                                ),
                               ),
-                            )
-                          : TaskCard(task: task),
-                    );
-                  }).toList(),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 20,
+                      left: 30,
+                      child: AnimatedBuilder(
+                        animation: _enterOffset,
+                        builder: (_, __) {
+                          return GestureDetector(
+                            onPanUpdate: (details) => setState(() => dragOffset += details.delta.dx),
+                            onPanEnd: (details) => swipeCard(details.velocity.pixelsPerSecond.dx),
+                            child: Transform.translate(
+                              offset: Offset(dragOffset + _enterOffset.value, 0),
+                              child: TaskCard(task: tasks.first),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
+      ),
+    );
+  }
+}
+
+class _SidePlaceholder extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        height: 200,
+        alignment: Alignment.center,
+        padding: EdgeInsets.all(12),
+        child: Text(
+          'No more tasks',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+        ),
       ),
     );
   }
