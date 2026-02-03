@@ -5,6 +5,30 @@ import 'dart:math';
 class TaskService extends ChangeNotifier {
   final List<Task> _tasks = [];
 
+  TaskService() {
+    _tasks.addAll([
+      Task(
+        id: generateId(),
+        title: 'Cleaning',
+        unitType: UnitType.minutes,
+        targetValue: 50,
+        allowedSplits: [ 15, 20, 30],
+      ),
+      Task(
+        id: generateId(),
+        title: 'Reading',
+        unitType: UnitType.pages,
+        targetValue: 30,
+      ),
+      Task(
+        id: generateId(),
+        title: 'train',
+        unitType: UnitType.executions,
+        targetValue: 3,
+      ),
+    ]);
+  }
+
   List<Task> get allTasks => List.unmodifiable(_tasks);
 
   List<Task> filteredTasks(int maxMinutes) {
