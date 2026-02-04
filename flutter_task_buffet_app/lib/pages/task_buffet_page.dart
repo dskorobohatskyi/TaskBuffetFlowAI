@@ -14,7 +14,8 @@ class TaskBuffetPage extends StatefulWidget {
   _TaskBuffetPageState createState() => _TaskBuffetPageState();
 }
 
-class _TaskBuffetPageState extends State<TaskBuffetPage> with SingleTickerProviderStateMixin {
+class _TaskBuffetPageState extends State<TaskBuffetPage>
+    with SingleTickerProviderStateMixin {
   List<Task> tasks = [];
   final List<Task> skippedTasks = [];
   double dragOffset = 0.0;
@@ -84,98 +85,208 @@ class _TaskBuffetPageState extends State<TaskBuffetPage> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Оберіть задачу')),
+      appBar: AppBar(title: Text('Choose a task')),
       body: Center(
         child: tasks.isEmpty
-            ? Text('Немає задач під цей час. Можеш відпочити 🙂')
-            : SizedBox(
-                height: 400,
-                width: 340,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    if (skippedTasks.isNotEmpty)
-                      Positioned(
-                        top: 40,
-                        left: -190,
-                        child: SizedBox(
-                          width: 180,
-                          child: AnimatedBuilder(
-                            animation: _sideSlide,
-                            builder: (_, __) {
-                              return Transform.translate(
-                                offset: Offset(-_sideSlide.value, 0),
-                                child: Transform.scale(
-                                  scale: _sideScale.value,
-                                  child: GestureDetector(
-                                    behavior: HitTestBehavior.translucent,
-                                    onHorizontalDragEnd: (details) {
-                                      if (details.primaryVelocity != null &&
-                                          details.primaryVelocity! > 300 &&
-                                          skippedTasks.isNotEmpty) {
-                                        setState(() {
-                                          tasks.insert(0, skippedTasks.removeLast());
-                                          dragOffset = 0.0;
-                                        });
-                                        animateNextToCenter();
-                                      }
-                                    },
-                                    child: Opacity(
-                                      opacity: 0.65,
-                                      child: TaskCard(task: skippedTasks.last, showStats: true),
+            ? (skippedTasks.isNotEmpty
+                ? LayoutBuilder(
+                    builder: (context, constraints) {
+                      final screenWidth = constraints.maxWidth;
+                      final cardWidth = (screenWidth * 0.78).clamp(240.0, 320.0);
+                      final cardHeight = 200.0;
+                      final sideWidth = cardWidth * 0.75;
+                      final peek = cardWidth * 0.4;
+                      final leftPeekX = -(sideWidth - peek);
+                      final centerLeft = (screenWidth - cardWidth) / 2;
+
+                      return SizedBox(
+                        height: 420,
+                        width: screenWidth,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Positioned(
+                              top: 40,
+                              left: centerLeft,
+                              child: Column(
+                                children: [
+                                  _SidePlaceholder(),
+                                  SizedBox(height: 12),
+                                  Text(
+                                    'Swipe left to return a task',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
                                     ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Positioned(
+                              top: 40,
+                              left: leftPeekX,
+                              child: SizedBox(
+                                width: sideWidth,
+                                child: AnimatedBuilder(
+                                  animation: _sideSlide,
+                                  builder: (_, __) {
+                                    return Transform.translate(
+                                      offset: Offset(-_sideSlide.value, 0),
+                                      child: Transform.scale(
+                                        scale: _sideScale.value,
+                                        child: GestureDetector(
+                                          behavior: HitTestBehavior.translucent,
+                                          onHorizontalDragEnd: (details) {
+                                            if (details.primaryVelocity != null &&
+                                                details.primaryVelocity! > 300 &&
+                                                skippedTasks.isNotEmpty) {
+                                              setState(() {
+                                                tasks.insert(0, skippedTasks.removeLast());
+                                                dragOffset = 0.0;
+                                              });
+                                              animateNextToCenter();
+                                            }
+                                          },
+                                          child: Opacity(
+                                            opacity: 0.65,
+                                            child: TaskCard(
+                                              task: skippedTasks.last,
+                                              showStats: true,
+                                              width: cardWidth,
+                                              height: cardHeight,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  )
+                : Text('No tasks for this time. You can rest.'))
+            : LayoutBuilder(
+                builder: (context, constraints) {
+                  final screenWidth = constraints.maxWidth;
+                  final cardWidth = (screenWidth * 0.78).clamp(240.0, 320.0);
+                  final cardHeight = 200.0;
+                  final sideWidth = cardWidth * 0.75;
+                  final peek = cardWidth * 0.4;
+                  final leftPeekX = -(sideWidth - peek);
+                  final rightPeekX = -(sideWidth - peek);
+                  final centerLeft = (screenWidth - cardWidth) / 2;
+
+                  return SizedBox(
+                    height: 400,
+                    width: screenWidth,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        if (skippedTasks.isNotEmpty)
+                          Positioned(
+                            top: 40,
+                            left: leftPeekX,
+                            child: SizedBox(
+                              width: sideWidth,
+                              child: AnimatedBuilder(
+                                animation: _sideSlide,
+                                builder: (_, __) {
+                                  return Transform.translate(
+                                    offset: Offset(-_sideSlide.value, 0),
+                                    child: Transform.scale(
+                                      scale: _sideScale.value,
+                                      child: GestureDetector(
+                                        behavior: HitTestBehavior.translucent,
+                                        onHorizontalDragEnd: (details) {
+                                          if (details.primaryVelocity != null &&
+                                              details.primaryVelocity! > 300 &&
+                                              skippedTasks.isNotEmpty) {
+                                            setState(() {
+                                              tasks.insert(0, skippedTasks.removeLast());
+                                              dragOffset = 0.0;
+                                            });
+                                            animateNextToCenter();
+                                          }
+                                        },
+                                        child: Opacity(
+                                          opacity: 0.65,
+                                          child: TaskCard(
+                                            task: skippedTasks.last,
+                                            showStats: true,
+                                            width: cardWidth,
+                                            height: cardHeight,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        Positioned(
+                          top: 40,
+                          right: rightPeekX,
+                          child: SizedBox(
+                            width: sideWidth,
+                            child: AnimatedBuilder(
+                              animation: _sideSlide,
+                              builder: (_, __) {
+                                return Transform.translate(
+                                  offset: Offset(_sideSlide.value, 0),
+                                  child: Transform.scale(
+                                    scale: _sideScale.value,
+                                    child: IgnorePointer(
+                                      child: Opacity(
+                                        opacity: 0.65,
+                                        child: tasks.length > 1
+                                            ? TaskCard(
+                                                task: tasks[1],
+                                                showStats: true,
+                                                width: cardWidth,
+                                                height: cardHeight,
+                                              )
+                                            : _SidePlaceholder(),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 20,
+                          left: centerLeft,
+                          child: AnimatedBuilder(
+                            animation: _enterOffset,
+                            builder: (_, __) {
+                              return GestureDetector(
+                                onPanUpdate: (details) =>
+                                    setState(() => dragOffset += details.delta.dx),
+                                onPanEnd: (details) =>
+                                    swipeCard(details.velocity.pixelsPerSecond.dx),
+                                child: Transform.translate(
+                                  offset: Offset(dragOffset + _enterOffset.value, 0),
+                                  child: TaskCard(
+                                    task: tasks.first,
+                                    showStats: true,
+                                    width: cardWidth,
+                                    height: cardHeight,
                                   ),
                                 ),
                               );
                             },
                           ),
                         ),
-                      ),
-                    Positioned(
-                      top: 40,
-                      right: -190,
-                      child: SizedBox(
-                        width: 180,
-                        child: AnimatedBuilder(
-                          animation: _sideSlide,
-                          builder: (_, __) {
-                            return Transform.translate(
-                              offset: Offset(_sideSlide.value, 0),
-                              child: Transform.scale(
-                                scale: _sideScale.value,
-                                child: IgnorePointer(
-                                  child: Opacity(
-                                    opacity: 0.65,
-                                    child: tasks.length > 1
-                                        ? TaskCard(task: tasks[1], showStats: true)
-                                        : _SidePlaceholder(),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                      ],
                     ),
-                    Positioned(
-                      top: 20,
-                      left: 30,
-                      child: AnimatedBuilder(
-                        animation: _enterOffset,
-                        builder: (_, __) {
-                          return GestureDetector(
-                            onPanUpdate: (details) => setState(() => dragOffset += details.delta.dx),
-                            onPanEnd: (details) => swipeCard(details.velocity.pixelsPerSecond.dx),
-                            child: Transform.translate(
-                              offset: Offset(dragOffset + _enterOffset.value, 0),
-                              child: TaskCard(task: tasks.first, showStats: true),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
       ),
     );
@@ -206,8 +317,16 @@ class TaskCard extends StatelessWidget {
   final Task task;
   final Color? progressColor;
   final bool showStats;
+  final double? width;
+  final double? height;
 
-  TaskCard({required this.task, this.progressColor, this.showStats = false});
+  TaskCard({
+    required this.task,
+    this.progressColor,
+    this.showStats = false,
+    this.width,
+    this.height,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -215,8 +334,8 @@ class TaskCard extends StatelessWidget {
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
-        width: 300,
-        height: 200,
+        width: width ?? 300,
+        height: height ?? 200,
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
@@ -251,7 +370,7 @@ class TaskCard extends StatelessWidget {
               child: Text(
                 task.linkCollectionId != null || task.unitType == UnitType.links
                     ? 'Choose link'
-                    : 'Виконати',
+                    : 'Execute',
               ),
             ),
           ],
@@ -305,5 +424,6 @@ class _TaskStats extends StatelessWidget {
     );
   }
 }
+
 
 
