@@ -1,14 +1,46 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/task.dart';
 import '../models/link_collection.dart';
+import '../repositories/task_repository.dart';
+import '../repositories/drift_task_repository.dart';
+import '../db/app_database.dart';
 import 'dart:math';
 
 class TaskService extends ChangeNotifier {
   final List<Task> _tasks = [];
   final List<LinkCollection> _linkCollections = [];
   bool _mockSeeded = false;
+  final TaskRepository _repo;
+  bool _isReady = false;
+  String? _loadError;
 
-  TaskService();
+  TaskService({TaskRepository? repository})
+      : _repo = repository ?? DriftTaskRepository(AppDatabase()) {
+    unawaited(_init());
+  }
+
+  bool get isReady => _isReady;
+  String? get loadError => _loadError;
+
+  Future<void> _init() async {
+    try {
+      final loadedTasks = await _repo.getTasks();
+      final loadedCollections = await _repo.getLinkCollections();
+      _tasks
+        ..clear()
+        ..addAll(loadedTasks);
+      _linkCollections
+        ..clear()
+        ..addAll(loadedCollections);
+      _loadError = null;
+    } catch (e) {
+      _loadError = e.toString();
+    } finally {
+      _isReady = true;
+      notifyListeners();
+    }
+  }
 
   List<Task> get allTasks => List.unmodifiable(_tasks);
   List<LinkCollection> get allLinkCollections => List.unmodifiable(_linkCollections);
@@ -27,6 +59,7 @@ class TaskService extends ChangeNotifier {
     } else {
       _linkCollections.add(collection);
     }
+    unawaited(_repo.upsertLinkCollection(collection));
     notifyListeners();
   }
 
@@ -43,15 +76,17 @@ class TaskService extends ChangeNotifier {
       title: collection.title,
       items: updatedItems,
     );
+    unawaited(_repo.toggleLinkDone(collectionId, linkId));
     notifyListeners();
   }
 
   void removeLinkCollection(String id) {
     _linkCollections.removeWhere((c) => c.id == id);
+    unawaited(_repo.removeLinkCollection(id));
     notifyListeners();
   }
 
-  void seedMockData() {
+  Future<void> seedMockData() async {
     if (_mockSeeded) return;
     _mockSeeded = true;
 
@@ -102,6 +137,8 @@ class TaskService extends ChangeNotifier {
       ),
     ]);
 
+    await _repo.insertTasks(_tasks);
+    await _repo.upsertLinkCollection(_linkCollections.first);
     notifyListeners();
   }
 
@@ -113,12 +150,14 @@ class TaskService extends ChangeNotifier {
 
   void addTask(Task task) {
     _tasks.add(task);
+    unawaited(_repo.upsertTask(task));
     notifyListeners();
   }
 
   void updateProgress(Task task, int value) {
     task.progress += value;
     if (task.progress < 0) task.progress = 0;
+    unawaited(_repo.upsertTask(task));
     notifyListeners();
   }
 
@@ -136,14 +175,22 @@ class TaskService extends ChangeNotifier {
   void recordSessionForTask(Task task, int sessionValue) {
     task.sessionCount += 1;
     task.lastSessionValue = sessionValue;
+    unawaited(_repo.upsertTask(task));
     notifyListeners();
   }
 
   void decrementSession(Task task) {
     if (task.sessionCount > 0) {
       task.sessionCount -= 1;
+      unawaited(_repo.upsertTask(task));
       notifyListeners();
     }
+  }
+
+  @override
+  void dispose() {
+    unawaited(_repo.close());
+    super.dispose();
   }
 
   String generateId() {

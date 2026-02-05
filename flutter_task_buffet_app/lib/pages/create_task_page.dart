@@ -225,9 +225,10 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                 Spacer(),
                 if (kDebugMode)
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       final service = context.read<TaskService>();
-                      service.seedMockData();
+                      await service.seedMockData();
+                      if (!mounted) return;
                       Navigator.popUntil(context, (route) => route.isFirst);
                     },
                     child: const Text('Use predefined data'),

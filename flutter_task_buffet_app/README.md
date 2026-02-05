@@ -1,5 +1,19 @@
 # flutter_task_buffet_app
 
+## Drift Web Setup
+
+To run Drift on web, we include a WASM sqlite module and a web worker.
+
+Required files in `web/`:
+- `sqlite3.wasm`
+- `drift_worker.js`
+
+Build (or rebuild) the worker:
+
+```bash
+dart compile js web/drift_worker.dart -O2 -o web/drift_worker.js
+```
+
 A new Flutter project.
 
 ## Getting Started

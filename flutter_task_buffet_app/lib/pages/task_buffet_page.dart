@@ -16,7 +16,6 @@ class TaskBuffetPage extends StatefulWidget {
 
 class _TaskBuffetPageState extends State<TaskBuffetPage>
     with SingleTickerProviderStateMixin {
-  List<Task> tasks = [];
   final List<Task> skippedTasks = [];
   double dragOffset = 0.0;
   late AnimationController _controller;
@@ -27,9 +26,6 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
   @override
   void initState() {
     super.initState();
-    final taskService = Provider.of<TaskService>(context, listen: false);
-    tasks = taskService.filteredTasks(widget.maxMinutes);
-
     _controller = AnimationController(vsync: this, duration: Duration(milliseconds: 250));
     _enterOffset = Tween<double>(begin: 80.0, end: 0.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
@@ -43,10 +39,10 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
     _controller.value = 1.0;
   }
 
-  void removeTopTask() {
+  void removeTopTask(Task task) {
     setState(() {
-      if (tasks.isNotEmpty) {
-        skippedTasks.add(tasks.removeAt(0));
+      if (skippedTasks.every((t) => t.id != task.id)) {
+        skippedTasks.add(task);
       }
     });
   }
@@ -56,17 +52,17 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
     _controller.forward();
   }
 
-  void swipeCard(double velocity) {
+  void swipeCard(double velocity, Task currentTask) {
     if (velocity.abs() > 500) {
       if (velocity < 0) {
         _controller.forward().then((_) {
-          removeTopTask();
+          removeTopTask(currentTask);
           animateNextToCenter();
           setState(() => dragOffset = 0.0);
         });
       } else if (skippedTasks.isNotEmpty) {
         setState(() {
-          tasks.insert(0, skippedTasks.removeLast());
+          skippedTasks.removeLast();
           dragOffset = 0.0;
         });
         animateNextToCenter();
@@ -107,8 +103,35 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Choose a task')),
-      body: Center(
-        child: tasks.isEmpty
+      body: Consumer<TaskService>(
+        builder: (context, service, __) {
+          if (!service.isReady) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (service.loadError != null) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Failed to load data. ${service.loadError}',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
+          final available = service.filteredTasks(widget.maxMinutes);
+          final availableById = {
+            for (final t in available) t.id: t,
+          };
+          final skippedIds = skippedTasks.map((t) => t.id).toSet();
+          final visible = available.where((t) => !skippedIds.contains(t.id)).toList();
+          final topTask = visible.isNotEmpty ? visible.first : null;
+          final nextTask = visible.length > 1 ? visible[1] : null;
+          final lastSkipped =
+              skippedTasks.isNotEmpty ? (availableById[skippedTasks.last.id] ?? skippedTasks.last) : null;
+
+          return Center(
+            child: visible.isEmpty
             ? (skippedTasks.isNotEmpty
                 ? LayoutBuilder(
                     builder: (context, constraints) {
@@ -156,7 +179,7 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                                                 details.primaryVelocity! > 300 &&
                                                 skippedTasks.isNotEmpty) {
                                               setState(() {
-                                                tasks.insert(0, skippedTasks.removeLast());
+                                                skippedTasks.removeLast();
                                                 dragOffset = 0.0;
                                               });
                                               animateNextToCenter();
@@ -164,12 +187,14 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                                           },
                                           child: Opacity(
                                             opacity: 0.65,
-                                            child: TaskCard(
-                                              task: skippedTasks.last,
-                                              showStats: true,
-                                              width: layout.cardWidth,
-                                              height: layout.cardHeight,
-                                            ),
+                                            child: lastSkipped == null
+                                                ? _SidePlaceholder()
+                                                : TaskCard(
+                                                    task: lastSkipped,
+                                                    showStats: true,
+                                                    width: layout.cardWidth,
+                                                    height: layout.cardHeight,
+                                                  ),
                                           ),
                                         ),
                                       ),
@@ -214,7 +239,7 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                                               details.primaryVelocity! > 300 &&
                                               skippedTasks.isNotEmpty) {
                                             setState(() {
-                                              tasks.insert(0, skippedTasks.removeLast());
+                                              skippedTasks.removeLast();
                                               dragOffset = 0.0;
                                             });
                                             animateNextToCenter();
@@ -222,12 +247,14 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                                         },
                                         child: Opacity(
                                           opacity: 0.65,
-                                          child: TaskCard(
-                                            task: skippedTasks.last,
-                                            showStats: true,
-                                            width: layout.cardWidth,
-                                            height: layout.cardHeight,
-                                          ),
+                                          child: lastSkipped == null
+                                              ? _SidePlaceholder()
+                                              : TaskCard(
+                                                  task: lastSkipped,
+                                                  showStats: true,
+                                                  width: layout.cardWidth,
+                                                  height: layout.cardHeight,
+                                                ),
                                         ),
                                       ),
                                     ),
@@ -251,9 +278,9 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                                     child: IgnorePointer(
                                       child: Opacity(
                                         opacity: 0.65,
-                                        child: tasks.length > 1
+                                        child: nextTask != null
                                             ? TaskCard(
-                                                task: tasks[1],
+                                                task: nextTask,
                                                 showStats: true,
                                                 width: layout.cardWidth,
                                                 height: layout.cardHeight,
@@ -273,15 +300,18 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                           child: AnimatedBuilder(
                             animation: _enterOffset,
                             builder: (_, __) {
+                              if (topTask == null) {
+                                return const SizedBox.shrink();
+                              }
                               return GestureDetector(
                                 onPanUpdate: (details) =>
                                     setState(() => dragOffset += details.delta.dx),
                                 onPanEnd: (details) =>
-                                    swipeCard(details.velocity.pixelsPerSecond.dx),
+                                    swipeCard(details.velocity.pixelsPerSecond.dx, topTask),
                                 child: Transform.translate(
                                   offset: Offset(dragOffset + _enterOffset.value, 0),
                                   child: TaskCard(
-                                    task: tasks.first,
+                                    task: topTask,
                                     showStats: true,
                                     width: layout.cardWidth,
                                     height: layout.cardHeight,
@@ -296,6 +326,8 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                   );
                 },
               ),
+          );
+        },
       ),
     );
   }

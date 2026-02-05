@@ -15,6 +15,20 @@ class ProgressPage extends StatelessWidget {
       appBar: AppBar(title: Text('My Progress')),
       body: Consumer<TaskService>(
         builder: (_, service, __) {
+          if (!service.isReady) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (service.loadError != null) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Failed to load data. ${service.loadError}',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
           final tasks = service.allTasks;
           if (tasks.isEmpty) {
             return Center(child: Text('No tasks yet'));
