@@ -82,6 +82,27 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
     super.dispose();
   }
 
+  CardLayoutParams constructLayoutParamsForCards(BoxConstraints constraints) {
+    final screenWidth = constraints.maxWidth;
+    final cardWidth = (screenWidth * 0.78).clamp(240.0, 320.0);
+    final cardHeight = 200.0;
+    final sideWidth = cardWidth * 0.75;
+    final peek = cardWidth * 0.4;
+    final leftPeekX = -(sideWidth - peek);
+    final rightPeekX = -(sideWidth - peek);
+    final centerLeft = (screenWidth - cardWidth) / 2;
+
+    return CardLayoutParams(
+      screenWidth: screenWidth,
+      cardWidth: cardWidth,
+      cardHeight: cardHeight,
+      sideWidth: sideWidth,
+      leftPeekX: leftPeekX,
+      rightPeekX: rightPeekX,
+      centerLeft: centerLeft,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,23 +112,17 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
             ? (skippedTasks.isNotEmpty
                 ? LayoutBuilder(
                     builder: (context, constraints) {
-                      final screenWidth = constraints.maxWidth;
-                      final cardWidth = (screenWidth * 0.78).clamp(240.0, 320.0);
-                      final cardHeight = 200.0;
-                      final sideWidth = cardWidth * 0.75;
-                      final peek = cardWidth * 0.4;
-                      final leftPeekX = -(sideWidth - peek);
-                      final centerLeft = (screenWidth - cardWidth) / 2;
+                      final layout = constructLayoutParamsForCards(constraints);
 
                       return SizedBox(
                         height: 420,
-                        width: screenWidth,
+                        width: layout.screenWidth,
                         child: Stack(
                           clipBehavior: Clip.none,
                           children: [
                             Positioned(
                               top: 40,
-                              left: centerLeft,
+                              left: layout.centerLeft,
                               child: Column(
                                 children: [
                                   _SidePlaceholder(),
@@ -124,9 +139,9 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                             ),
                             Positioned(
                               top: 40,
-                              left: leftPeekX,
+                              left: layout.leftPeekX,
                               child: SizedBox(
-                                width: sideWidth,
+                                width: layout.sideWidth,
                                 child: AnimatedBuilder(
                                   animation: _sideSlide,
                                   builder: (_, __) {
@@ -152,8 +167,8 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                                             child: TaskCard(
                                               task: skippedTasks.last,
                                               showStats: true,
-                                              width: cardWidth,
-                                              height: cardHeight,
+                                              width: layout.cardWidth,
+                                              height: layout.cardHeight,
                                             ),
                                           ),
                                         ),
@@ -171,27 +186,20 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                 : Text('No tasks for this time. You can rest.'))
             : LayoutBuilder(
                 builder: (context, constraints) {
-                  final screenWidth = constraints.maxWidth;
-                  final cardWidth = (screenWidth * 0.78).clamp(240.0, 320.0);
-                  final cardHeight = 200.0;
-                  final sideWidth = cardWidth * 0.75;
-                  final peek = cardWidth * 0.4;
-                  final leftPeekX = -(sideWidth - peek);
-                  final rightPeekX = -(sideWidth - peek);
-                  final centerLeft = (screenWidth - cardWidth) / 2;
+                  final layout = constructLayoutParamsForCards(constraints);
 
                   return SizedBox(
                     height: 400,
-                    width: screenWidth,
+                    width: layout.screenWidth,
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
                         if (skippedTasks.isNotEmpty)
                           Positioned(
                             top: 40,
-                            left: leftPeekX,
+                            left: layout.leftPeekX,
                             child: SizedBox(
-                              width: sideWidth,
+                              width: layout.sideWidth,
                               child: AnimatedBuilder(
                                 animation: _sideSlide,
                                 builder: (_, __) {
@@ -217,8 +225,8 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                                           child: TaskCard(
                                             task: skippedTasks.last,
                                             showStats: true,
-                                            width: cardWidth,
-                                            height: cardHeight,
+                                            width: layout.cardWidth,
+                                            height: layout.cardHeight,
                                           ),
                                         ),
                                       ),
@@ -230,9 +238,9 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                           ),
                         Positioned(
                           top: 40,
-                          right: rightPeekX,
+                          right: layout.rightPeekX,
                           child: SizedBox(
-                            width: sideWidth,
+                            width: layout.sideWidth,
                             child: AnimatedBuilder(
                               animation: _sideSlide,
                               builder: (_, __) {
@@ -247,8 +255,8 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                                             ? TaskCard(
                                                 task: tasks[1],
                                                 showStats: true,
-                                                width: cardWidth,
-                                                height: cardHeight,
+                                                width: layout.cardWidth,
+                                                height: layout.cardHeight,
                                               )
                                             : _SidePlaceholder(),
                                       ),
@@ -261,7 +269,7 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                         ),
                         Positioned(
                           top: 20,
-                          left: centerLeft,
+                          left: layout.centerLeft,
                           child: AnimatedBuilder(
                             animation: _enterOffset,
                             builder: (_, __) {
@@ -275,8 +283,8 @@ class _TaskBuffetPageState extends State<TaskBuffetPage>
                                   child: TaskCard(
                                     task: tasks.first,
                                     showStats: true,
-                                    width: cardWidth,
-                                    height: cardHeight,
+                                    width: layout.cardWidth,
+                                    height: layout.cardHeight,
                                   ),
                                 ),
                               );
@@ -425,5 +433,22 @@ class _TaskStats extends StatelessWidget {
   }
 }
 
+class CardLayoutParams {
+  final double screenWidth;
+  final double cardWidth;
+  final double cardHeight;
+  final double sideWidth;
+  final double leftPeekX;
+  final double rightPeekX;
+  final double centerLeft;
 
-
+  const CardLayoutParams({
+    required this.screenWidth,
+    required this.cardWidth,
+    required this.cardHeight,
+    required this.sideWidth,
+    required this.leftPeekX,
+    required this.rightPeekX,
+    required this.centerLeft,
+  });
+}

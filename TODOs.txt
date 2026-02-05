@@ -1,6 +1,9 @@
-Add energy level usage across the application.
+Done:
 Add link container task. (done)
-Should link source have info about link status (done or not)?
+Should link source have info about link status (done or not)? - yes
+
+TODO:
+Add energy level usage across the application.
 Resolve overflow issue when task is accomplished but user has done even more then was expected.
 Cancel button on completion page which nullifies current progress.
 'Try to find relevant task' from "Manage links -> collection menu, or suggest the user that this collection is referenced by list<specified_task>. some kind of collection in use.
