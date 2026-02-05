@@ -350,7 +350,7 @@ class TaskCard extends StatelessWidget {
             Text(task.title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
             LinearProgressIndicator(
-              value: task.targetValue == 0 ? 0 : task.progress / task.targetValue.toDouble(),
+              value: task.progressRatio,
               minHeight: 10,
               backgroundColor: Colors.grey.shade300,
               color: progressColor ?? Colors.blue,
@@ -397,8 +397,7 @@ class _TaskStats extends StatelessWidget {
   Widget build(BuildContext context) {
     final target = task.targetValue;
     final progress = task.progress;
-    final ratio = target == 0 ? 0.0 : progress / target;
-    final percent = (ratio * 100).clamp(0.0, 100.0).toStringAsFixed(0);
+    final percent = (task.progressRatio * 100).clamp(0.0, 100.0).toStringAsFixed(0);
     final remaining = (target - progress).clamp(0, target);
 
     return Row(

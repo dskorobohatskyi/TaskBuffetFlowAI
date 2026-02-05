@@ -39,23 +39,23 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     final title = _titleController.text.trim();
     if (title.isEmpty) return;
 
-    if (unitType == UnitType.minutes && selectedSplits.isEmpty) return;
+    if (unitType.inputSpec.needsSplits && selectedSplits.isEmpty) return;
 
-    if (unitType == UnitType.minutes) {
+    if (unitType.isTimeBased) {
       final parsed = int.tryParse(_targetMinutesController.text);
       if (parsed == null || parsed <= 0) return;
     } else {
       final parsed = int.tryParse(_targetCountController.text);
       if (parsed == null || parsed <= 0) return;
     }
-    if (unitType == UnitType.executions) {
+    if (unitType.inputSpec.needsMinMinutes) {
       final parsed = int.tryParse(_minExecMinutesController.text);
       if (parsed == null || parsed <= 0) return;
     }
-    if (unitType == UnitType.links && _selectedLinkCollectionId == null) return;
+    if (unitType.inputSpec.needsLinkCollection && _selectedLinkCollectionId == null) return;
 
     final service = context.read<TaskService>();
-    final targetValue = unitType == UnitType.minutes
+    final targetValue = unitType.isTimeBased
         ? int.parse(_targetMinutesController.text)
         : int.parse(_targetCountController.text);
 
@@ -65,42 +65,16 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
         title: title,
         unitType: unitType,
         targetValue: targetValue,
-        allowedSplits: unitType == UnitType.minutes ? selectedSplits : const [],
+        allowedSplits: unitType.inputSpec.needsSplits ? selectedSplits : const [],
         minRequiredMinutes:
-            (unitType == UnitType.executions || unitType == UnitType.links)
+            unitType.inputSpec.needsMinMinutes
                 ? int.tryParse(_minExecMinutesController.text)
                 : null,
-        linkCollectionId: unitType == UnitType.links ? _selectedLinkCollectionId : null,
+        linkCollectionId: unitType.inputSpec.needsLinkCollection ? _selectedLinkCollectionId : null,
       ),
     );
 
     Navigator.pop(context);
-  }
-
-  String _unitTypeLabel(UnitType type) {
-    switch (type) {
-      case UnitType.minutes:
-        return "Time (minutes)";
-      case UnitType.executions:
-        return "Executions (times)";
-      case UnitType.pages:
-        return "Pages";
-      case UnitType.links:
-        return "Links";
-    }
-  }
-
-  String _targetLabel(UnitType type) {
-    switch (type) {
-      case UnitType.executions:
-        return "Target executions";
-      case UnitType.pages:
-        return "Target pages";
-      case UnitType.minutes:
-        return "Target minutes";
-      case UnitType.links:
-        return "Target links";
-    }
   }
 
   @override
@@ -136,7 +110,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                   .map(
                     (t) => DropdownMenuItem(
                       value: t,
-                      child: Text(_unitTypeLabel(t)),
+                      child: Text(t.displayName),
                     ),
                   )
                   .toList(),
@@ -156,7 +130,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
 
             const SizedBox(height: 16),
 
-            if (unitType == UnitType.minutes) ...[
+            if (unitType.inputSpec.needsSplits) ...[
               TextField(
                 controller: _targetMinutesController,
                 keyboardType: TextInputType.number,
@@ -205,9 +179,9 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
               TextField(
                 controller: _targetCountController,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: _targetLabel(unitType)),
+                decoration: InputDecoration(labelText: unitType.targetLabel),
               ),
-              if (unitType == UnitType.executions || unitType == UnitType.links) ...[
+              if (unitType.inputSpec.needsMinMinutes) ...[
                 SizedBox(height: 12),
                 TextField(
                   controller: _minExecMinutesController,
@@ -215,7 +189,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                   decoration: const InputDecoration(labelText: 'Min required minutes'),
                 ),
               ],
-              if (unitType == UnitType.links) ...[
+              if (unitType.inputSpec.needsLinkCollection) ...[
                 SizedBox(height: 12),
                 Consumer<TaskService>(
                   builder: (_, service, __) {

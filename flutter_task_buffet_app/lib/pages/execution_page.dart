@@ -115,7 +115,7 @@ class _ExecutionPageState extends State<ExecutionPage> {
                         onPressed: () {
                           setState(() => _sessionCount += 1);
                           Provider.of<TaskService>(context, listen: false)
-                              .updateProgress(widget.task, 1);
+                              .applyProgress(widget.task, 1);
                           if (widget.task.progress >= widget.task.targetValue) {
                             _goToCompletion(context, _sessionCount);
                           }
@@ -133,7 +133,7 @@ class _ExecutionPageState extends State<ExecutionPage> {
                         onPressed: () {
                           setState(() => _sessionCount += 1);
                           Provider.of<TaskService>(context, listen: false)
-                              .updateProgress(widget.task, 1);
+                              .applyProgress(widget.task, 1);
                           if (widget.task.unitType == UnitType.executions) {
                             _goToCompletion(context, _sessionCount);
                             return;
@@ -187,7 +187,7 @@ class _ExecutionPageState extends State<ExecutionPage> {
                         : () {
                             setState(() => _sessionCount += _selectedPages);
                             Provider.of<TaskService>(context, listen: false)
-                                .updateProgress(widget.task, _selectedPages);
+                                .applyProgress(widget.task, _selectedPages);
                             if (widget.task.progress >= widget.task.targetValue) {
                               _goToCompletion(context, _sessionCount);
                             }

@@ -9,3 +9,5 @@ Cancel button on completion page which nullifies current progress.
 'Try to find relevant task' from "Manage links -> collection menu, or suggest the user that this collection is referenced by list<specified_task>. some kind of collection in use.
 create new link collection from create task menu (just in place)
 Make sure that collection id is set and used properly during UI procedures.
+What to do If links target is greater than undone links in source list? (warning) 
+also warning is useful if two tasks are referenced to single source list (should be a problem on crate new task page)

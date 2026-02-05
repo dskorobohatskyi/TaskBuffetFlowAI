@@ -26,8 +26,7 @@ class ProgressPage extends StatelessWidget {
             separatorBuilder: (_, __) => SizedBox(height: 16),
             itemBuilder: (_, index) {
               final task = tasks[index];
-              final target = task.targetValue == 0 ? 0.0 : task.targetValue.toDouble();
-              final ratio = target == 0.0 ? 0.0 : task.progress / target;
+              final ratio = task.progressRatio;
               return Center(
                 child: TaskCard(
                   task: task,

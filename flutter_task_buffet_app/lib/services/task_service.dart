@@ -107,16 +107,7 @@ class TaskService extends ChangeNotifier {
 
   List<Task> filteredTasks(int maxMinutes) {
     return _tasks.where((t) {
-      if (t.unitType == UnitType.minutes) {
-        return t.allowedSplits.any((s) => s <= maxMinutes);
-      }
-      if (t.unitType == UnitType.executions) {
-        return (t.minRequiredMinutes ?? 0) <= maxMinutes;
-      }
-      if (t.unitType == UnitType.links) {
-        return (t.minRequiredMinutes ?? 0) <= maxMinutes;
-      }
-      return true;
+      return t.fitsMinutes(maxMinutes);
     }).toList();
   }
 
@@ -131,7 +122,18 @@ class TaskService extends ChangeNotifier {
     notifyListeners();
   }
 
+  void applyProgress(Task task, int delta, {bool recordSession = false}) {
+    updateProgress(task, delta);
+    if (recordSession) {
+      recordSessionForTask(task, delta);
+    }
+  }
+
   void recordSession(Task task, int sessionValue) {
+    recordSessionForTask(task, sessionValue);
+  }
+
+  void recordSessionForTask(Task task, int sessionValue) {
     task.sessionCount += 1;
     task.lastSessionValue = sessionValue;
     notifyListeners();

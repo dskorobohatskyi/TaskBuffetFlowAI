@@ -37,8 +37,7 @@ class LinkSelectionPage extends StatelessWidget {
     final service = Provider.of<TaskService>(context, listen: false);
     service.toggleLinkDone(collectionId, linkId);
     if (!wasDone) {
-      service.updateProgress(task, 1);
-      service.recordSession(task, 1);
+      service.applyProgress(task, 1, recordSession: true);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
