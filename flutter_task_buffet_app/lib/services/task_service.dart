@@ -6,55 +6,9 @@ import 'dart:math';
 class TaskService extends ChangeNotifier {
   final List<Task> _tasks = [];
   final List<LinkCollection> _linkCollections = [];
+  bool _mockSeeded = false;
 
-  TaskService() {
-    _linkCollections.add(
-      LinkCollection(
-        id: 'different_links',
-        title: 'Reading Links',
-        items: [
-          LinkItem(
-            id: 'l1',
-            title: 'Deep Work summary',
-            url: 'https://example.com/deep-work',
-          ),
-          LinkItem(
-            id: 'l2',
-            title: 'Codex tutorial',
-            url: 'https://www.youtube.com/watch?v=px7XlbYgk7I',
-          ),
-          LinkItem(
-            id: 'l3',
-            title: 'Focus techniques',
-            url: 'https://example.com/focus',
-          ),
-        ],
-      ),
-    );
-    _tasks.addAll([
-      Task(
-        id: generateId(),
-        title: 'Cleaning',
-        unitType: UnitType.minutes,
-        targetValue: 50,
-        allowedSplits: [ 15, 20, 30],
-      ),
-      Task(
-        id: generateId(),
-        title: 'Read articles',
-        unitType: UnitType.links,
-        targetValue: 2,
-        linkCollectionId: 'different_links',
-        minRequiredMinutes: 10,
-      ),
-      Task(
-        id: generateId(),
-        title: 'train',
-        unitType: UnitType.executions,
-        targetValue: 3,
-      ),
-    ]);
-  }
+  TaskService();
 
   List<Task> get allTasks => List.unmodifiable(_tasks);
   List<LinkCollection> get allLinkCollections => List.unmodifiable(_linkCollections);
@@ -94,6 +48,60 @@ class TaskService extends ChangeNotifier {
 
   void removeLinkCollection(String id) {
     _linkCollections.removeWhere((c) => c.id == id);
+    notifyListeners();
+  }
+
+  void seedMockData() {
+    if (_mockSeeded) return;
+    _mockSeeded = true;
+
+    _linkCollections.add(
+      LinkCollection(
+        id: 'different_links',
+        title: 'Reading Links',
+        items: [
+          LinkItem(
+            id: 'l1',
+            title: 'Deep Work summary',
+            url: 'https://example.com/deep-work',
+          ),
+          LinkItem(
+            id: 'l2',
+            title: 'Codex tutorial',
+            url: 'https://www.youtube.com/watch?v=px7XlbYgk7I',
+          ),
+          LinkItem(
+            id: 'l3',
+            title: 'Focus techniques',
+            url: 'https://example.com/focus',
+          ),
+        ],
+      ),
+    );
+    _tasks.addAll([
+      Task(
+        id: generateId(),
+        title: 'Cleaning',
+        unitType: UnitType.minutes,
+        targetValue: 50,
+        allowedSplits: [15, 20, 30],
+      ),
+      Task(
+        id: generateId(),
+        title: 'Read articles',
+        unitType: UnitType.links,
+        targetValue: 2,
+        linkCollectionId: 'different_links',
+        minRequiredMinutes: 10,
+      ),
+      Task(
+        id: generateId(),
+        title: 'train',
+        unitType: UnitType.executions,
+        targetValue: 3,
+      ),
+    ]);
+
     notifyListeners();
   }
 

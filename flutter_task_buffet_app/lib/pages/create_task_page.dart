@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../services/task_service.dart';
 import '../models/task.dart';
@@ -241,10 +242,24 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
 
             const Spacer(),
 
-            ElevatedButton(
-              onPressed: saveTask,
-              child: const Text('Save task'),
-            )
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: saveTask,
+                  child: const Text('Save task'),
+                ),
+                Spacer(),
+                if (kDebugMode)
+                  ElevatedButton(
+                    onPressed: () {
+                      final service = context.read<TaskService>();
+                      service.seedMockData();
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                    },
+                    child: const Text('Use predefined data'),
+                  ),
+              ],
+            ),
           ],
         ),
       ),
